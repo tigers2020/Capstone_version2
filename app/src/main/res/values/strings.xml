@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Idle Fatory Business</string>
+    <string name="balance">Balance</string>
+    <string name="idle_cash">Idle Cash</string>
+    <string name="upgrade">Upgrade</string>
+    <string name="open">Open</string>
+    <string name="manager">Manager</string>
+    <string name="factory_box">Factory Box</string>
+    <string name="worker">Worker</string>
+</resources>
