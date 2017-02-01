@@ -10,6 +10,8 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.androidnerdcolony.idlefactorybusiness.R;
@@ -189,6 +191,23 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
 
         data.close();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id){
+            case R.id.action_insertData:
+                DefaultDatabase.setDefaultDatabase(context);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.insert_data, menu);
+
+        return true;
     }
 
     @Override
