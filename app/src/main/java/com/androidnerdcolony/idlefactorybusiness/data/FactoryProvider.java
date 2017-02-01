@@ -142,6 +142,7 @@ public class FactoryProvider extends ContentProvider {
                         }
                     }
                 }finally {
+                    db.setTransactionSuccessful();
                     db.endTransaction();
                 }
         }
