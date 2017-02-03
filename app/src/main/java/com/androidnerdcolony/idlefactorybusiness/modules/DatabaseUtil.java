@@ -2,16 +2,20 @@ package com.androidnerdcolony.idlefactorybusiness.modules;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.net.Uri;
 
 import com.androidnerdcolony.idlefactorybusiness.data.FactoryContract.FactoryEntry;
+import com.androidnerdcolony.idlefactorybusiness.data.FactoryPreferenceManager;
 
 import java.util.Date;
+
+import static android.R.attr.id;
 
 /**
  * Created by tiger on 1/30/2017.
  */
 
-public class DefaultDatabase {
+public class DatabaseUtil {
     public static void setDefaultDatabase(Context context) {
         ContentValues defaultUserState = new ContentValues();
         ContentValues[] defaultFactoryStates = new ContentValues[10];
@@ -56,5 +60,37 @@ public class DefaultDatabase {
         context.getContentResolver().insert(FactoryEntry.CONTENT_USER_URI, defaultUserState);
         context.getContentResolver().bulkInsert(FactoryEntry.CONTENT_FACTORY_URI, defaultFactoryStates);
 
+    }
+
+    public static void OpenLine(Context context, double openCost, long id) {
+        ContentValues factoryValue = new ContentValues();
+        ContentValues userValue = new ContentValues();
+        double balance = FactoryPreferenceManager.getBalance(context);
+        balance = balance - openCost;
+        UpdateBalance(context, balance);
+        factoryValue.put(FactoryEntry.COLUMN_OPEN, 1);
+        Uri factoryUri = FactoryEntry.CONTENT_FACTORY_URI.buildUpon().appendPath(String.valueOf(id)).build();
+        context.getContentResolver().update(factoryUri, factoryValue, null, null);
+    }
+
+    public static void UpgradeLine(Context context, double lineCost, int level, long id) {
+        ContentValues values = new ContentValues();
+        double balance = FactoryPreferenceManager.getBalance(context);
+        balance = balance - lineCost;
+        level++;
+
+        UpdateBalance(context, balance);
+        values.put(FactoryEntry.COLUMN_LEVEL, level);
+        Uri uri = FactoryEntry.CONTENT_FACTORY_URI.buildUpon().appendPath(String.valueOf(id)).build();
+        context.getContentResolver().update(uri, values, null, null);
+
+    }
+    public static void UpdateBalance(Context context, double balance){
+        ContentValues values = new ContentValues();
+        Uri uri = FactoryEntry.CONTENT_USER_URI;
+
+        values.put(FactoryEntry.COLUMN_BALANCE, balance);
+        context.getContentResolver().update(uri, values, null, null);
+        FactoryPreferenceManager.setBalance(context, balance);
     }
 }

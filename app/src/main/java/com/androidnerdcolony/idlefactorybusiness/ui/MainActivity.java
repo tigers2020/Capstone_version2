@@ -16,16 +16,17 @@ import android.widget.TextView;
 
 import com.androidnerdcolony.idlefactorybusiness.R;
 import com.androidnerdcolony.idlefactorybusiness.data.FactoryContract.FactoryEntry;
+import com.androidnerdcolony.idlefactorybusiness.data.FactoryPreferenceManager;
 import com.androidnerdcolony.idlefactorybusiness.modules.ConvertNumber;
-import com.androidnerdcolony.idlefactorybusiness.modules.DefaultDatabase;
+import com.androidnerdcolony.idlefactorybusiness.modules.DatabaseUtil;
+import com.androidnerdcolony.idlefactorybusiness.sync.FactoryWork;
 import com.androidnerdcolony.idlefactorybusiness.ui.adapter.FactoryAdapter;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
 
-import static android.R.attr.data;
-import static android.os.Build.VERSION_CODES.M;
+import static android.R.attr.start;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public static final int INDEX_TOKEN = 4;
 
     public static final String[] DEFAULT_FACTORY_PROJECTION = new String[]{
+            FactoryEntry._ID,
             FactoryEntry.COLUMN_FACTORY_ID,
             FactoryEntry.COLUMN_FACTORY_LINE_ID,
             FactoryEntry.COLUMN_IDLE_CASH,
@@ -57,18 +59,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             FactoryEntry.COLUMN_VALUE
     };
 
-    public static final int INDEX_FACTORY_ID = 0;
-    public static final int INDEX_FACTORY_LINE_ID = 1;
-    public static final int INDEX_IDLE_CASH = 2;
-    public static final int INDEX_LEVEL = 3;
-    public static final int INDEX_LINE_COST = 4;
-    public static final int INDEX_OPEN_COST = 5;
-    public static final int INDEX_WORK_CAPACITY = 6;
-    public static final int INDEX_WORKING = 7;
-    public static final int INDEX_OPEN = 8;
-    public static final int INDEX_QUALITY = 9;
-    public static final int INDEX_TIME = 10;
-    public static final int INDEX_VALUE = 11;
+    public static final int INDEX_ID = 0;
+    public static final int INDEX_FACTORY_ID = 1;
+    public static final int INDEX_FACTORY_LINE_ID = 2;
+    public static final int INDEX_IDLE_CASH = 3;
+    public static final int INDEX_LEVEL = 4;
+    public static final int INDEX_LINE_COST = 5;
+    public static final int INDEX_OPEN_COST = 6;
+    public static final int INDEX_WORK_CAPACITY = 7;
+    public static final int INDEX_WORKING = 8;
+    public static final int INDEX_OPEN = 9;
+    public static final int INDEX_QUALITY = 10;
+    public static final int INDEX_TIME = 11;
+    public static final int INDEX_VALUE = 12;
 
     private static final int USER_LOADER = 1001;
     private static final int FACTORY_LOADER = 1002;
@@ -78,6 +81,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     FactoryAdapter mAdapter;
 
     private Context context;
+
+    boolean startSchedule;
+    private double balance;
 
     @BindView(R.id.balance)
     TextView balanceView;
@@ -92,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         context = this;
         ButterKnife.bind(this);
 
-        mAdapter = new FactoryAdapter(context);
+        mAdapter = new FactoryAdapter(this);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(context);
 
@@ -115,8 +121,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }else{
             mLoaderManager.restartLoader(FACTORY_LOADER, savedInstanceState, this);
         }
+        checkSchedule();
 
 
+
+    }
+
+    private void checkSchedule() {
+        if (startSchedule) return;
+        startSchedule = true;
+
+        FactoryWork.initialize(context);
     }
 
     private void firstDataCheck() {
@@ -128,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         if (cursor.getCount() <= 0 && !cursor.moveToFirst()){
             Timber.d("data is empty");
-            DefaultDatabase.setDefaultDatabase(context);
+            DatabaseUtil.setDefaultDatabase(context);
         }
     }
 
@@ -167,18 +182,16 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         switch (id){
             case USER_LOADER:
                 if (data.moveToFirst()) {
-                    double balance = data.getDouble(INDEX_BALANCE);
+                    balance = data.getDouble(INDEX_BALANCE);
+                    FactoryPreferenceManager.setBalance(context, balance);
                     double idleCash = data.getDouble(INDEX_IDLE_CASH);
-
                     String balanceString = ConvertNumber.numberToString(balance);
                     String idleCashString = ConvertNumber.numberToString(idleCash);
-
                     balanceView.setText(balanceString);
                     idleCashView.setText(idleCashString);
                 }
                 break;
             case FACTORY_LOADER:
-                Timber.d("set Cursor in Adapter");
                 mAdapter.swapCursor(data);
                 mAdapter.notifyDataSetChanged();
                 break;
@@ -186,11 +199,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 throw new UnsupportedOperationException("unknown loader ID");
 
         }
-
-
-
-
-        data.close();
     }
 
     @Override
@@ -198,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         int id = item.getItemId();
         switch (id){
             case R.id.action_insertData:
-                DefaultDatabase.setDefaultDatabase(context);
+                DatabaseUtil.setDefaultDatabase(context);
         }
         return super.onOptionsItemSelected(item);
     }

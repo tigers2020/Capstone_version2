@@ -23,6 +23,9 @@
             android:authorities="com.androidnerdcolony.idlefactorybusiness"
             android:name=".data.FactoryProvider"
             android:exported="false"/>
+
+        <service android:name=".sync.FactoryWorkService"
+                 android:exported="false"/>
     </application>
 
 </manifest>

@@ -168,13 +168,13 @@ public class FactoryProvider extends ContentProvider {
                 rowEffected = mHelper.getWritableDatabase().update(
                         FactoryContract.FactoryEntry.FACTORY_TABLE_NAME,
                         contentValues, selection, selectionArgs);
+                getContext().getContentResolver().notifyChange(uri, null);
                 break;
-            case CODE_USER_ID :
-                selection = FactoryContract.FactoryEntry._ID + "=?";
-                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+            case CODE_USER :
                 rowEffected = mHelper.getWritableDatabase().update(
                         FactoryContract.FactoryEntry.USER_TABLE_NAME,
                         contentValues, selection, selectionArgs);
+                getContext().getContentResolver().notifyChange(uri, null);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

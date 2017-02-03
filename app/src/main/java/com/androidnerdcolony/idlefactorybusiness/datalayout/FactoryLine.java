@@ -18,7 +18,7 @@ public class FactoryLine {
     private int time;
     private int value;
 
-    private FactoryLine(){}
+    public FactoryLine(){}
     public FactoryLine(int factoryId, int factoryLineId, double idleCash, int level, double lineCost, double openCost, double workCapacity, boolean working, boolean open, int quality, int time, int value) {
         this.factoryId = factoryId;
         this.factoryLineId = factoryLineId;
